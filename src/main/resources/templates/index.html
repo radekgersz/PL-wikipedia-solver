@@ -41,4 +41,16 @@
     <p id="responseBox" class="alert alert-secondary"></p>
 </div>
 </body>
+<script>
+    document.getElementById("queryBtn").addEventListener("click", async () => {
+        const input1 = document.getElementById("inputField1").value;
+        const input2 = document.getElementById("inputField2").value;
+
+        // send GET request with query params
+        const response = await fetch(`/api/query?first=${encodeURIComponent(input1)}&second=${encodeURIComponent(input2)}`);
+        const text = await response.text();
+
+        document.getElementById("responseBox").innerText = text;
+    });
+</script>
 </html>

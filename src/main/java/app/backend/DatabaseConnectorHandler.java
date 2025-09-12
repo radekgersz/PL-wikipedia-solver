@@ -1,4 +1,4 @@
-package backend;
+package app.backend;
 
 import org.springframework.stereotype.Component;
 
