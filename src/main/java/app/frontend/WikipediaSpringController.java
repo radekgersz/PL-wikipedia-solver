@@ -14,8 +14,8 @@ public class WikipediaSpringController {
         return "You entered: " + first + " and " + second;
     }
     @GetMapping("/chuj")
-    public String chuj(@RequestParam(defaultValue="") String chuj) {
-        return chuj;
+    public String chujParams(@RequestParam String first){
+        return String.format("You entered: %s", first);
     }
 }
 
