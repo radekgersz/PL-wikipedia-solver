@@ -152,8 +152,7 @@ if [ ! -f links.txt.gz ]; then
     | sed -n 's/^INSERT INTO `pagelinks` VALUES (//p' \
     | sed -e 's/),(/\'$'\n/g' \
     | egrep "^[0-9]+,0,[0-9]+$" \
-    | sed -e $"s/,0,'/\t/g" \
-    | sed -e "s/',0//g" \
+    | sed -e 's/,0,/\t/g' \
     | pigz --fast > links.txt.gz.tmp
   mv links.txt.gz.tmp links.txt.gz
 else
