@@ -8,6 +8,17 @@ export LC_ALL=C
 ROOT_DIR=`pwd`
 OUT_DIR="dump"
 
+if [[ $# -eq 0 ]]; then
+  DOWNLOAD_DATE=$(wget -q -O- https://dumps.wikimedia.org/enwiki/ | grep -Po '\d{8}' | sort | tail -n1)
+else
+  if [ ${#1} -ne 8 ]; then
+    echo "[ERROR] Invalid download date provided: $1"
+    exit 1
+  else
+    DOWNLOAD_DATE=$1
+  fi
+fi
+
 DOWNLOAD_URL="https://dumps.wikimedia.org/enwiki/$DOWNLOAD_DATE"
 TORRENT_URL="https://dump-torrents.toolforge.org/enwiki/$DOWNLOAD_DATE"
 
