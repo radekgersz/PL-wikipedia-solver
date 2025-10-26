@@ -27,6 +27,8 @@ REDIRECTS_FILENAME="enwiki-$DOWNLOAD_DATE-redirect.sql.gz"
 PAGES_FILENAME="enwiki-$DOWNLOAD_DATE-page.sql.gz"
 LINKS_FILENAME="enwiki-$DOWNLOAD_DATE-pagelinks.sql.gz"
 
+mkdir -p $OUT_DIR
+pushd $OUT_DIR > /dev/null
 
 ###########################################
 #  REPLACE TITLES AND REDIRECTS IN FILES  #
