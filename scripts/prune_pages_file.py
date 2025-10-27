@@ -35,7 +35,7 @@ with gzip.open(REDIRECTS_FILE, 'rt', encoding='utf-8') as f:
 
 # Loop through the pages file, ignoring pages which are marked as redirects but which do not have a
 # corresponding redirect in the redirects dictionary, printing the remaining pages to stdout.
-with gzip.open(REDIRECTS_FILE, 'rt', encoding='utf-8') as f:
+with gzip.open(PAGES_FILE, 'rt', encoding='utf-8') as f:
   for line in f:
     [page_id, page_title, is_redirect] = line.rstrip('\n').split('\t')
 
