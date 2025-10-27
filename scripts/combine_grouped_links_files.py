@@ -46,8 +46,8 @@ for page_id, links in LINKS.items():
     outgoing_count = len(outgoing_links.split('|')) if outgoing_links else 0
     incoming_count = len(incoming_links.split('|')) if incoming_links else 0
 
-    columns = [page_id, str(outgoing_links_count), str(
-        incoming_links_count), outgoing_links, incoming_links]
+    columns = [page_id, str(outgoing_count), str(
+        incoming_count), outgoing_links, incoming_links]
 
     print(('\t'.join(columns)))
 
