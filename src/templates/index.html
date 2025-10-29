@@ -6,22 +6,11 @@
 <body>
     <h1>Basic Flask Website</h1>
 
-    <input id="name" placeholder="Enter your name">
-    <button onclick="sendName()">Say Hello</button>
+    <input id="start" placeholder="Starting Article">
+    <input id="end" placeholder="End Article">
+    <button onclick="findShortestPath()">Find shortest Path</button>
 
-    <p id="response"></p>
-
-    <script>
-        async function sendName() {
-            const name = document.getElementById('name').value;
-            const res = await fetch('/hello', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({name})
-            });
-            const data = await res.json();
-            document.getElementById('response').textContent = data.message;
-        }
-    </script>
+    <p id="result"></p>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
