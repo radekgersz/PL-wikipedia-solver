@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flask Demo</title>
+</head>
+<body>
+    <h1>Basic Flask Website</h1>
+
+    <input id="name" placeholder="Enter your name">
+    <button onclick="sendName()">Say Hello</button>
+
+    <p id="response"></p>
+
+    <script>
+        async function sendName() {
+            const name = document.getElementById('name').value;
+            const res = await fetch('/hello', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name})
+            });
+            const data = await res.json();
+            document.getElementById('response').textContent = data.message;
+        }
+    </script>
+</body>
+</html>
