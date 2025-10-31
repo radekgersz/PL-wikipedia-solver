@@ -1,47 +1,38 @@
 """
-Replaces page names in the links file with their corresponding IDs, eliminates links containing
-non-existing pages, and replaces redirects with the pages to which they redirect.
+Replaces page IDs in the links file with their corresponding redirected IDs,
+eliminates links containing non-existing pages, and replaces redirects with the
+pages to which they redirect.
 
 Output is written to stdout.
 """
 
-import io
 import sys
 import gzip
 
 # Validate inputs
 if len(sys.argv) < 4:
-  print('[ERROR] Not enough arguments provided!')
-  print(('[INFO] Usage: {0} <pages_file> <redirects_file> <links_file>'.format(sys.argv[0])))
-  sys.exit()
+    print('[ERROR] Not enough arguments provided!')
+    print('[INFO] Usage: {0} <pages_file> <redirects_file> <links_file>'.format(sys.argv[0]))
+    sys.exit()
 
 PAGES_FILE = sys.argv[1]
 REDIRECTS_FILE = sys.argv[2]
 LINKS_FILE = sys.argv[3]
 
-if not PAGES_FILE.endswith('.gz'):
-  print('[ERROR] Pages file must be gzipped.')
-  sys.exit()
+for f in [PAGES_FILE, REDIRECTS_FILE, LINKS_FILE]:
+    if not f.endswith('.gz'):
+        print(f'[ERROR] File {f} must be gzipped.')
+        sys.exit()
 
-if not REDIRECTS_FILE.endswith('.gz'):
-  print('[ERROR] Redirects file must be gzipped.')
-  sys.exit()
-
-if not LINKS_FILE.endswith('.gz'):
-  print('[ERROR] Links file must be gzipped.')
-  sys.exit()
-
-# Create a set of all page IDs and a dictionary of page titles to their corresponding IDs.
+# --- Load all valid pages ---
 ALL_PAGE_IDS = set()
-PAGE_TITLES_TO_IDS = {}
 with gzip.open(PAGES_FILE, 'rt', encoding='utf-8') as f:
     for line in f:
         parts = line.rstrip('\n').split('\t')
-        page_id, page_title = parts[0], parts[1]
+        page_id = parts[0]
         ALL_PAGE_IDS.add(page_id)
-        PAGE_TITLES_TO_IDS[page_title] = page_id
 
-# Create a dictionary of page IDs to the target page ID to which they redirect.
+# --- Load redirects ---
 REDIRECTS = {}
 with gzip.open(REDIRECTS_FILE, 'rt', encoding='utf-8') as f:
     for line in f:
@@ -49,19 +40,20 @@ with gzip.open(REDIRECTS_FILE, 'rt', encoding='utf-8') as f:
         src, tgt = parts[0], parts[1]
         REDIRECTS[src] = tgt
 
-# Loop through each line in the links file, replacing titles with IDs, applying redirects, and
-# removing nonexistent pages, writing the result to stdout.
-for line in gzip.open(LINKS_FILE, 'rt', encoding='utf-8'):
-  [source_page_id, target_page_title] = line.rstrip('\n').split('\t')
+# --- Process links file (source_id → target_id) ---
+with gzip.open(LINKS_FILE, 'rt', encoding='utf-8') as f:
+    for line in f:
+        parts = line.rstrip('\n').split('\t')
+        source_page_id, target_page_id = parts[0], parts[1]
 
-  source_page_exists = source_page_id in ALL_PAGE_IDS
+        # Skip nonexistent pages
+        if source_page_id not in ALL_PAGE_IDS or target_page_id not in ALL_PAGE_IDS:
+            continue
 
-  if source_page_exists:
-    source_page_id = REDIRECTS.get(source_page_id, source_page_id)
+        # Apply redirects
+        source_page_id = REDIRECTS.get(source_page_id, source_page_id)
+        target_page_id = REDIRECTS.get(target_page_id, target_page_id)
 
-    target_page_id = PAGE_TITLES_TO_IDS.get(target_page_title)
-
-    if target_page_id is not None and source_page_id != target_page_id:
-      target_page_id = REDIRECTS.get(target_page_id, target_page_id)
-      print(('\t'.join([source_page_id, target_page_id])))
-
+        # Avoid self-links
+        if source_page_id != target_page_id:
+            print('\t'.join([source_page_id, target_page_id]))
