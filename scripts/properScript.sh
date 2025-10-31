@@ -5,11 +5,11 @@ set -euo pipefail
 # Force default language for output sorting to be bytewise. Necessary to ensure uniformity amongst
 # UNIX commands.
 export LC_ALL=C
-ROOT_DIR=`pwd`
-OUT_DIR="dump"
 
+# By default, the latest Wikipedia dump will be downloaded. If a download date in the format
+# YYYYMMDD is provided as the first argument, it will be used instead.
 if [[ $# -eq 0 ]]; then
-  DOWNLOAD_DATE=$(wget -q -O- https://dumps.wikimedia.org/enwiki/ | grep -Po '\d{8}' | sort | tail -n1)
+  DOWNLOAD_DATE=$(wget -q -O- https://dumps.wikimedia.org/plwiki/ | grep -Po '\d{8}' | sort | tail -n1)
 else
   if [ ${#1} -ne 8 ]; then
     echo "[ERROR] Invalid download date provided: $1"
@@ -19,20 +19,123 @@ else
   fi
 fi
 
-DOWNLOAD_URL="https://dumps.wikimedia.org/enwiki/$DOWNLOAD_DATE"
-TORRENT_URL="https://dump-torrents.toolforge.org/enwiki/$DOWNLOAD_DATE"
+ROOT_DIR=`pwd`
+OUT_DIR="dump"
 
-SHA1SUM_FILENAME="enwiki-$DOWNLOAD_DATE-sha1sums.txt"
-REDIRECTS_FILENAME="enwiki-$DOWNLOAD_DATE-redirect.sql.gz"
-PAGES_FILENAME="enwiki-$DOWNLOAD_DATE-page.sql.gz"
-LINKS_FILENAME="enwiki-$DOWNLOAD_DATE-pagelinks.sql.gz"
+DOWNLOAD_URL="https://dumps.wikimedia.org/plwiki/$DOWNLOAD_DATE"
+TORRENT_URL="https://dump-torrents.toolforge.org/plwiki/$DOWNLOAD_DATE"
 
+SHA1SUM_FILENAME="plwiki-$DOWNLOAD_DATE-sha1sums.txt"
+REDIRECTS_FILENAME="plwiki-$DOWNLOAD_DATE-redirect.sql.gz"
+PAGES_FILENAME="plwiki-$DOWNLOAD_DATE-page.sql.gz"
+LINKS_FILENAME="plwiki-$DOWNLOAD_DATE-pagelinks.sql.gz"
+
+
+# Make the output directory if it doesn't already exist and move to it
 mkdir -p $OUT_DIR
 pushd $OUT_DIR > /dev/null
 
-###########################################
-#  REPLACE TITLES AND REDIRECTS IN FILES  #
-###########################################
+
+echo "[INFO] Download date: $DOWNLOAD_DATE"
+echo "[INFO] Download URL: $DOWNLOAD_URL"
+echo "[INFO] Output directory: $OUT_DIR"
+echo
+
+##############################
+#  DOWNLOAD WIKIPEDIA DUMPS  #
+##############################
+
+function download_file() {
+  if [ ! -f $2 ]; then
+    echo
+    if [ $1 != sha1sums ] && command -v aria2c > /dev/null; then
+      echo "[INFO] Downloading $1 file via torrent"
+      time aria2c --summary-interval=0 --console-log-level=warn --seed-time=0 \
+        "$TORRENT_URL/$2.torrent" 2>&1 | grep -v "ERROR\|Exception" || true
+    fi
+    
+    if [ ! -f $2 ]; then
+      echo "[INFO] Downloading $1 file via wget"
+      time wget --progress=dot:giga "$DOWNLOAD_URL/$2"
+    fi
+
+    if [ $1 != sha1sums ]; then
+      echo
+      echo "[INFO] Verifying SHA-1 hash for $1 file"
+      time grep "$2" "$SHA1SUM_FILENAME" | sha1sum -c
+      if [ $? -ne 0 ]; then
+        echo
+        echo "[ERROR] Downloaded $1 file has incorrect SHA-1 hash"
+        rm $2
+        exit 1
+      fi
+    fi
+  else
+    echo "[WARN] Already downloaded $1 file"
+  fi
+}
+
+download_file "sha1sums" $SHA1SUM_FILENAME
+download_file "redirects" $REDIRECTS_FILENAME
+download_file "pages" $PAGES_FILENAME
+download_file "links" $LINKS_FILENAME
+
+
+
+#### trimming process ####
+
+### trimming redirects ###
+if [ ! -f redirects.txt.gz ]; then 
+  echo
+  echo "[INFO] Trimming redirects file"
+  time pigz -dc $REDIRECTS_FILENAME \
+    | sed -n 's/^INSERT INTO `redirect` VALUES (//p' \
+    | sed -e 's/),(/\'$'\n/g' \
+    | egrep "^[0-9]+,0," \
+    | sed -E "s/^([0-9]+),0,'([^']*)'.*/\1\t\2/" \
+    | pigz --fast > redirects.txt.gz.tmp
+  mv redirects.txt.gz.tmp redirects.txt.gz
+else
+  echo "[WARN] Already trimmed redirects file"
+fi
+
+echo "[DEBUG] Done with trimming redirects file"
+
+### strimming pages ###
+if [ ! -f pages.txt.gz ]; then
+  echo
+  echo "[INFO] Trimming pages file"
+  time pigz -dc $PAGES_FILENAME \
+    | sed -n "s/^INSERT INTO \`page\` VALUES (//p" \
+    | sed -e 's/),(/\'$'\n/g' \
+    | perl -ne "if (/^([0-9]+),0,'((?:[^'\\\\]|\\\\.)*)',([^,]+)/) { print \"\$1\t\$2\t\$3\n\"; }" \
+    | perl -pe "s/\\\\'/'/g" \
+    | pigz --fast > pages.txt.gz.tmp
+  mv pages.txt.gz.tmp pages.txt.gz
+else
+  echo "[WARN] Already trimmed pages file"
+fi
+
+
+echo "[DEBUG] Done with trimming pages file"
+
+if [ ! -f links.txt.gz ]; then
+  echo
+  echo "[INFO] Trimming links file"  
+  time pigz -dc $LINKS_FILENAME \
+  | sed -n "s/^INSERT INTO \`pagelinks\` VALUES //p" \
+  | sed "s/),(/)\n(/g" \
+  | egrep "^\([0-9]+,0,[0-9]+\)$" \
+  | sed -E "s/^\(([^,]+),0,([0-9]+)\)$/\1\t\2/" \
+  | pigz --fast > links.txt.gz.tmp
+ mv links.txt.gz.tmp links.txt.gz
+else
+  echo "[WARN] Already trimmed links file"
+fi
+
+echo "All done with preprocessing"
+
+### python scripts ###
 if [ ! -f redirects.with_ids.txt.gz ]; then
   echo
   echo "[INFO] Replacing titles in redirects file"
@@ -43,8 +146,6 @@ if [ ! -f redirects.with_ids.txt.gz ]; then
 else
   echo "[WARN] Already replaced titles in redirects file"
 fi
-
-echo "[DEBUG] done with replacing titles and redirects"
 
 if [ ! -f links.with_ids.txt.gz ]; then
   echo
@@ -65,8 +166,6 @@ else
   echo "[WARN] Already pruned pages which are marked as redirects but with no redirect"
 fi
 
-echo "[DEBUG] done with titles and redirects in links file"
-
 #####################
 #  SORT LINKS FILE  #
 #####################
@@ -82,8 +181,6 @@ else
   echo "[WARN] Already sorted links file by source page ID"
 fi
 
-echo "[DEBUG] done with sorting links file"
-
 if [ ! -f links.sorted_by_target_id.txt.gz ]; then
   echo
   echo "[INFO] Sorting links file by target page ID"
@@ -96,7 +193,6 @@ else
   echo "[WARN] Already sorted links file by target page ID"
 fi
 
-echo "[DEBUG] done with sorting by target ID"
 
 #############################
 #  GROUP SORTED LINKS FILE  #
@@ -112,8 +208,6 @@ else
   echo "[WARN] Already grouped source links file by source page ID"
 fi
 
-echo "[DEBUG] done with grouping source links file"
-
 if [ ! -f links.grouped_by_target_id.txt.gz ]; then
   echo
   echo "[INFO] Grouping target links file by target page ID"
@@ -123,8 +217,6 @@ if [ ! -f links.grouped_by_target_id.txt.gz ]; then
 else
   echo "[WARN] Already grouped target links file by target page ID"
 fi
-
-echo "[DEBUG] done with grouping by target page ID"
 
 ################################
 # COMBINE GROUPED LINKS FILES  #
@@ -139,7 +231,6 @@ else
   echo "[WARN] Already combined grouped links files"
 fi
 
-echo "[DEBUG] done with grouping"
 
 ############################
 #  CREATE SQLITE DATABASE  #

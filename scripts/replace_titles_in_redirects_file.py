@@ -59,7 +59,7 @@ for source_page_id, target_page_id in REDIRECTS.items():
     redirected_count += 1
 
     # Break out if there is a circular path, meaning the redirects only point to other redirects,
-    # not an acutal page.
+    # not an actual page.
     if target_page_id == start_target_page_id or redirected_count > 100:
       target_page_id = None
 
