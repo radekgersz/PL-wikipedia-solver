@@ -10,7 +10,7 @@ import sys
 import gzip
 
 # Validate inputs
-if len(sys.argv) < 4:
+if len(sys.argv) < 5:
     print('[ERROR] Not enough arguments provided!')
     print('[INFO] Usage: {0} <pages_file> <redirects_file> <links_file>'.format(sys.argv[0]))
     sys.exit()
@@ -18,6 +18,7 @@ if len(sys.argv) < 4:
 PAGES_FILE = sys.argv[1]
 REDIRECTS_FILE = sys.argv[2]
 LINKS_FILE = sys.argv[3]
+LINKTARGET_FILE = sys.argv[4]
 
 for f in [PAGES_FILE, REDIRECTS_FILE, LINKS_FILE]:
     if not f.endswith('.gz'):
@@ -26,11 +27,13 @@ for f in [PAGES_FILE, REDIRECTS_FILE, LINKS_FILE]:
 
 # --- Load all valid pages ---
 ALL_PAGE_IDS = set()
+pageNameToID = {}
 with gzip.open(PAGES_FILE, 'rt', encoding='utf-8') as f:
     for line in f:
         parts = line.rstrip('\n').split('\t')
-        page_id = parts[0]
+        page_id,page_title = parts[0],parts[1]
         ALL_PAGE_IDS.add(page_id)
+        pageNameToID[page_title] = ID
 
 # --- Load redirects ---
 REDIRECTS = {}
@@ -40,13 +43,27 @@ with gzip.open(REDIRECTS_FILE, 'rt', encoding='utf-8') as f:
         src, tgt = parts[0], parts[1]
         REDIRECTS[src] = tgt
 
+relationalIDToTitle ={}
+with gzip.open(LINKTARGET_FILE, 'rt', encoding='utf-8') as f:
+    for line in f:
+        parts = line.rstrip('\n').split('\t')
+        relational_ID, title = parts[0], parts[1]
+        relationalIDToTitle[relational_ID] = title
+
+
 # --- Process links file (source_id → target_id) ---
 with gzip.open(LINKS_FILE, 'rt', encoding='utf-8') as f:
     for line in f:
         parts = line.rstrip('\n').split('\t')
-        source_page_id, target_page_id = parts[0], parts[1]
+        source_page_id, relational_page_id = parts[0], parts[1]
+        page_title = relationalIDToTitle[relational_ID]
+        if page_title is None:
+            continue
 
-        # Skip nonexistent pages
+        target_page_id = pageNameToID[page_title]
+        if target_page_id is None:
+            continue
+
         if source_page_id not in ALL_PAGE_IDS or target_page_id not in ALL_PAGE_IDS:
             continue
 
@@ -57,3 +74,4 @@ with gzip.open(LINKS_FILE, 'rt', encoding='utf-8') as f:
         # Avoid self-links
         if source_page_id != target_page_id:
             print('\t'.join([source_page_id, target_page_id]))
+
