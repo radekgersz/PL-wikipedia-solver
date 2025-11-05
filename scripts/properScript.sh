@@ -166,7 +166,7 @@ fi
 if [ ! -f links.with_ids.txt.gz ]; then
   echo
   echo "[INFO] Replacing titles and redirects in links file"
-  time python "$ROOT_DIR/replace_titles_and_redirects_in_links_file.py" pages.txt.gz redirects.with_ids.txt.gz links.txt.gz \
+  time python "$ROOT_DIR/replace_titles_and_redirects_in_links_file.py" pages.txt.gz redirects.with_ids.txt.gz links.txt.gz linktarget.txt.gz \
     | pigz --fast > links.with_ids.txt.gz.tmp
   mv links.with_ids.txt.gz.tmp links.with_ids.txt.gz
 else

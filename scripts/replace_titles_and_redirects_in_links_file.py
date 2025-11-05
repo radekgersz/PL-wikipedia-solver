@@ -20,7 +20,7 @@ REDIRECTS_FILE = sys.argv[2]
 LINKS_FILE = sys.argv[3]
 LINKTARGET_FILE = sys.argv[4]
 
-for f in [PAGES_FILE, REDIRECTS_FILE, LINKS_FILE]:
+for f in [PAGES_FILE, REDIRECTS_FILE, LINKS_FILE, LINKTARGET_FILE]:
     if not f.endswith('.gz'):
         print(f'[ERROR] File {f} must be gzipped.')
         sys.exit()
@@ -33,7 +33,7 @@ with gzip.open(PAGES_FILE, 'rt', encoding='utf-8') as f:
         parts = line.rstrip('\n').split('\t')
         page_id,page_title = parts[0],parts[1]
         ALL_PAGE_IDS.add(page_id)
-        pageNameToID[page_title] = ID
+        pageNameToID[page_title] = page_id
 
 # --- Load redirects ---
 REDIRECTS = {}
@@ -56,11 +56,11 @@ with gzip.open(LINKS_FILE, 'rt', encoding='utf-8') as f:
     for line in f:
         parts = line.rstrip('\n').split('\t')
         source_page_id, relational_page_id = parts[0], parts[1]
-        page_title = relationalIDToTitle[relational_ID]
+        page_title = relationalIDToTitle.get(relational_page_id)
         if page_title is None:
             continue
 
-        target_page_id = pageNameToID[page_title]
+        target_page_id = pageNameToID.get(page_title)
         if target_page_id is None:
             continue
 
