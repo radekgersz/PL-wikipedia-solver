@@ -29,6 +29,7 @@ SHA1SUM_FILENAME="plwiki-$DOWNLOAD_DATE-sha1sums.txt"
 REDIRECTS_FILENAME="plwiki-$DOWNLOAD_DATE-redirect.sql.gz"
 PAGES_FILENAME="plwiki-$DOWNLOAD_DATE-page.sql.gz"
 LINKS_FILENAME="plwiki-$DOWNLOAD_DATE-pagelinks.sql.gz"
+LINKTARGET_FILENAME="plwiki-$DOWNLOAD_DATE-linktarget.sql.gz"
 
 
 # Make the output directory if it doesn't already exist and move to it
@@ -79,6 +80,7 @@ download_file "sha1sums" $SHA1SUM_FILENAME
 download_file "redirects" $REDIRECTS_FILENAME
 download_file "pages" $PAGES_FILENAME
 download_file "links" $LINKS_FILENAME
+download_file "linktarget" $LINKTARGET_FILENAME
 
 
 
@@ -101,7 +103,7 @@ fi
 
 echo "[DEBUG] Done with trimming redirects file"
 
-### strimming pages ###
+### trimming pages ###
 if [ ! -f pages.txt.gz ]; then
   echo
   echo "[INFO] Trimming pages file"
@@ -133,7 +135,21 @@ else
   echo "[WARN] Already trimmed links file"
 fi
 
-echo "All done with preprocessing"
+echo "[DEBUG] done with trimming links file"
+
+if [ ! -f linktarget.txt.gz ]; then 
+  echo
+  echo "[INFO] Trimming linktargets file"
+time pigz -dc plwiki-20251101-linktarget.sql.gz \
+  | sed -n 's/^INSERT INTO `linktarget` VALUES (//p' \
+  | sed -e 's/),(/\'$'\n/g' \
+  | egrep "^[0-9]+,0," \
+  | perl -ne "if (/^([0-9]+),0,'((?:[^'\\\\]|\\\\.)*)'/) { my (\$id,\$t) = (\$1,\$2); \$t =~ s/\\\\\"/\"/g; \$t =~ s/\\\\'/'/g; print \"\$id\t\$t\n\"; }" \
+  | pigz --fast > linktarget.txt.gz.tmp
+   mv linktarget.txt.gz.tmp linktarget.txt.gz
+else
+  echo "[WARN] Already trimmed linktargets file"
+fi
 
 ### python scripts ###
 if [ ! -f redirects.with_ids.txt.gz ]; then
@@ -257,4 +273,4 @@ fi
 
 
 echo
-echo "[INFO] All done!!!!"
+echo "[INFO] All done!"
