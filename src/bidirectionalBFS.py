@@ -93,17 +93,3 @@ def _reconstruct(meet, parents_fwd, parents_bwd):
 
 # ---------- Example run ----------
 
-if __name__ == "__main__":
-    db_path = "../finalDB.sqlite"  # <- set this
-    start_page_id = 2964518            # <- set this
-    target_page_id = 999              # <- set this
-
-    conn = sqlite3.connect(db_path)
-    path = bidirectional_bfs(conn, start_page_id, target_page_id, resolve_redirs=True)
-    conn.close()
-
-    if path:
-        print("Shortest path (page IDs):")
-        print(" -> ".join(map(str, path)))
-    else:
-        print("No path found.")
