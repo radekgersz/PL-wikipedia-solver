@@ -1,13 +1,14 @@
 from flask import Flask, render_template, request, jsonify
-from DatabaseHelpers import downloadDatabase, createSQLiteEngine
+from DatabaseHelpers import downloadDatabase
+from DatabaseHandler import DatabaseHandler
 import os
 import dotenv
 
 app = Flask(__name__)
 
 dotenv.load_dotenv()
-datasetPath = downloadDatabase(os.getenv("REPO_ID"), os.getenv("ACCESS_TOKEN"),os.getenv("DATABASE_FILENAME"))
-engine = createSQLiteEngine(datasetPath)
+# datasetPath = downloadDatabase(os.getenv("REPO_ID"), os.getenv("ACCESS_TOKEN"),os.getenv("DATABASE_FILENAME"))
+databaseHandler = DatabaseHandler("/home/radek-gersz/PycharmProjects/PL-wikipedia-solver/dataset/finalDB.sqlite")
 @app.route('/')
 def home():
     return render_template('index.html')
