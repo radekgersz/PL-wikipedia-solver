@@ -91,5 +91,4 @@ def _reconstruct(meet, parents_fwd, parents_bwd):
         n = parents_bwd[n]
     return path + tail
 
-# ---------- Example run ----------
 

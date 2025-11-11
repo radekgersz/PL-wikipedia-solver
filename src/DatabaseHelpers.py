@@ -1,11 +1,6 @@
-import os
 from huggingface_hub import hf_hub_download
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
-from dotenv import load_dotenv
-from sqlalchemy import text
-
-load_dotenv()  # loads from .env in current dir by default
 
 def downloadDatabase(repoID,accessToken,filename):
     dataset_path = hf_hub_download(
@@ -28,4 +23,3 @@ def createSQLiteEngine(databasePath):
     )
     return engine
 
-engine = createSQLiteEngine("/home/radek-gersz/PycharmProjects/PL-wikipedia-solver/dataset/finalDB.sqlite")

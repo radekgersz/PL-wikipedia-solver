@@ -1,7 +1,13 @@
 from flask import Flask, render_template, request, jsonify
+from DatabaseHelpers import downloadDatabase, createSQLiteEngine
+import os
+import dotenv
 
 app = Flask(__name__)
 
+dotenv.load_dotenv()
+datasetPath = downloadDatabase(os.getenv("REPO_ID"), os.getenv("ACCESS_TOKEN"),os.getenv("DATABASE_FILENAME"))
+engine = createSQLiteEngine(datasetPath)
 @app.route('/')
 def home():
     return render_template('index.html')
