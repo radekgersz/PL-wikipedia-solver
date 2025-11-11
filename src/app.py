@@ -24,7 +24,9 @@ def find():
     data = request.get_json()
     start = data.get('start','chuj')
     end = data.get('end','chuj')
-    return jsonify(message=f"Hello, {start}-{end}!")
+    pathWithIds = databaseHandler.findShortestPath(start,end)
+    pathWithNames = databaseHandler.convertIDsToNames(pathWithIds)
+    return jsonify(message=f"{pathWithNames}!")
 if __name__ == '__main__':
     app.run(debug=True)
 
