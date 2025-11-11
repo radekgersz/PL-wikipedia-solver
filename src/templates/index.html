@@ -2,15 +2,20 @@
 <html>
 <head>
     <title>Flask Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Basic Flask Website</h1>
+    <div class="container">
+        <h1>Polish Wikipedia Speedrun Solver</h1>
 
-    <input id="start" placeholder="Starting Article">
-    <input id="end" placeholder="End Article">
-    <button onclick="findShortestPath()">Find shortest Path</button>
+        <input id="start" placeholder="Starting Article">
+        <input id="end" placeholder="End Article">
+        <br>
+        <button onclick="findShortestPath()">Find Shortest Path</button>
 
-    <p id="result"></p>
+        <p id="result"></p>
+    </div>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

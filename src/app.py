@@ -1,7 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from DatabaseHelpers import downloadDatabase
 from DatabaseHandler import DatabaseHandler
-import os
 import dotenv
 
 app = Flask(__name__)
@@ -13,12 +11,14 @@ databaseHandler = DatabaseHandler("/home/radek-gersz/PycharmProjects/PL-wikipedi
 def home():
     return render_template('index.html')
 
-@app.route('/hello', methods=['POST'])
-def hello():
-    data = request.get_json()
-    name = data.get('name', 'stranger')
-    return jsonify(message=f"Hello, {name}!")
+@app.route('/suggest', methods=['GET'])
+def suggest():
+    query = request.args.get('q', '').strip()
+    if not query:
+        return jsonify([])
 
+    suggestions = databaseHandler.getTitlesStartingWith(query)
+    return jsonify(suggestions)
 @app.route('/find', methods=['POST'])
 def find():
     data = request.get_json()
