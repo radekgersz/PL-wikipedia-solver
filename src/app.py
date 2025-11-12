@@ -1,3 +1,5 @@
+from pyexpat.errors import messages
+
 from flask import Flask, render_template, request, jsonify
 from DatabaseHandler import DatabaseHandler
 import dotenv
@@ -22,11 +24,13 @@ def suggest():
 @app.route('/find', methods=['POST'])
 def find():
     data = request.get_json()
-    start = data.get('start','chuj')
-    end = data.get('end','chuj')
+    start = data.get('start','null')
+    end = data.get('end','null')
     pathWithIds = databaseHandler.findShortestPath(start,end)
+    if not pathWithIds:
+        return jsonify(message="No path between the two articles was found!")
     pathWithNames = databaseHandler.convertIDsToNames(pathWithIds)
-    return jsonify(message=f"{pathWithNames}!")
+    return jsonify(message="Path found.", path=pathWithNames)
 if __name__ == '__main__':
     app.run(debug=True)
 

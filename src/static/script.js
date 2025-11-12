@@ -17,7 +17,7 @@ function setupAutocomplete(inputId) {
         suggestionBox.innerHTML = '';
         suggestionBox.classList.remove('active'); // 🔹 hide initially
 
-        if (query.length < 2) return;
+        if (query.length < 1) return;
 
         const suggestions = await fetchSuggestions(query);
         if (suggestions.length === 0) return; // nothing to show
@@ -50,7 +50,6 @@ setupAutocomplete('end');
 
 
 // --- Your existing path-finding function ---
-
 async function findShortestPath() {
     const start = document.getElementById('start').value;
     const end = document.getElementById('end').value;
@@ -62,5 +61,34 @@ async function findShortestPath() {
     });
 
     const data = await res.json();
-    document.getElementById('result').textContent = data.message;
+    const resultEl = document.getElementById('result');
+    resultEl.innerHTML = ''; // clear previous result
+
+    if (!data.path || data.path.length === 0) {
+        resultEl.textContent = data.message;
+        return;
+    }
+
+    // Create clickable links with arrows
+    data.path.forEach((title, i) => {
+        const link = document.createElement('a');
+        link.href = `https://pl.wikipedia.org/wiki/${encodeURIComponent(title)}`;
+        link.textContent = title;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.style.color = '#007BFF';
+        link.style.textDecoration = 'none';
+
+        link.addEventListener('mouseover', () => link.style.textDecoration = 'underline');
+        link.addEventListener('mouseout', () => link.style.textDecoration = 'none');
+
+        resultEl.appendChild(link);
+
+        if (i < data.path.length - 1) {
+            const arrow = document.createElement('span');
+            arrow.textContent = '  --->  ';
+            resultEl.appendChild(arrow);
+        }
+    });
 }
+

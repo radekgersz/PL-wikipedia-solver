@@ -1,12 +1,15 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
 body {
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-    background-color: #f4f6f8;
     display: flex;
     flex-direction: column;
+    justify-content: space-between; /* pushes footer to the bottom */
     align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    margin: 0;
+    background-color: #f4f6f8;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
 }
 
 .container {
@@ -15,6 +18,28 @@ body {
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     text-align: center;
+    margin-top: 80px;
+}
+
+footer {
+    width: 100%;
+    text-align: center;
+    padding: 15px 0;
+    background-color: #f4f6f8;
+    color: #555;
+    font-size: 0.95rem;
+    border-top: 1px solid #ddd;
+    margin-top: auto; /* ensures it's pinned at bottom */
+}
+
+footer a {
+    color: #007BFF;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+footer a:hover {
+    text-decoration: underline;
 }
 
 .inputs {

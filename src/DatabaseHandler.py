@@ -121,12 +121,12 @@ class DatabaseHandler:
         return [id_to_title.get(i, f"[missing:{i}]") for i in id_list]
 
     def getTitlesStartingWith(self, prefix, limit=10):
-        """Return up to `limit` page titles starting with the given prefix."""
+        """Return up to `limit` page titles starting with the given prefix, sorted by length (case-insensitive)."""
         query = text("""
             SELECT title
             FROM pages
-            WHERE title LIKE :prefix
-            ORDER BY title
+            WHERE title LIKE :prefix COLLATE NOCASE
+            ORDER BY LENGTH(title) ASC, title ASC
             LIMIT :limit
         """)
         with self.engine.connect() as conn:
