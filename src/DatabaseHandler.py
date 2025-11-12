@@ -1,12 +1,14 @@
 from DatabaseHelpers import createSQLiteEngine
 from sqlalchemy import text
 from collections import deque
-
+import os
 SEP = "|"  # pipe-separated list of IDs in DB
 
 class DatabaseHandler:
     def __init__(self, databasePath):
-        self.engine = createSQLiteEngine(databasePath)
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        abs_path = os.path.join(base_dir, databasePath)
+        self.engine = createSQLiteEngine(abs_path)
 
     def getIDFromName(self, name):
         query = text("SELECT id FROM pages WHERE title = :title LIMIT 1;")

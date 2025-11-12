@@ -9,4 +9,6 @@ CREATE TABLE IF NOT EXISTS pages
 .separator "\t"
 .import /dev/stdin pages
 
+UPDATE pages SET title = REPLACE(title, '_', ' ');
+
 CREATE INDEX pages_title_index ON pages(title COLLATE NOCASE);

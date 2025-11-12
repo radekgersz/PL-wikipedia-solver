@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 dotenv.load_dotenv()
 # datasetPath = downloadDatabase(os.getenv("REPO_ID"), os.getenv("ACCESS_TOKEN"),os.getenv("DATABASE_FILENAME"))
-databaseHandler = DatabaseHandler("/home/radek-gersz/PycharmProjects/PL-wikipedia-solver/dataset/finalDB.sqlite")
+databaseHandler = DatabaseHandler("../dataset/finalDB.sqlite")
 @app.route('/')
 def home():
     return render_template('index.html')
