@@ -30,7 +30,7 @@ run the  **properScript.sh** file, which creates the dataset from scratch. You c
 so you can create the database in any other language that wikipedia supports. 
 
 **WARNING!** The script runs for a long time, if you don't have a powerful machine, so you might want to use the 
-google compute Virtual machines ([Six Degrees of Wikipedia](https://www.sixdegreesofwikipedia.com/) helped me a lot with this)
+google compute Virtual machines ([sdow repository](https://github.com/jwngr/sdow) helped me a lot with this)
 
 ---
 ##  Inspiration
