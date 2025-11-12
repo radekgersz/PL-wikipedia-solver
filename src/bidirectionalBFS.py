@@ -63,16 +63,26 @@ def bidirectional_bfs(conn, start_id, target_id, resolve_redirs=True):
 
     return None
 
-def _expand_frontier(conn, queue, this_parents, other_parents, neighbor_fn):
+def _expand_frontier(self, conn, queue, this_parents, other_parents, neighbor_fn):
     if not queue:
         return None
+
     current = queue.popleft()
+
+    # 🔹 Step 1: if current is a redirect, follow it
+    current = self._resolve_redirect(conn, current)
+
+    # 🔹 Step 2: explore neighbors normally
     for nb in neighbor_fn(conn, current):
+        # 🔹 Step 3: if neighbor is a redirect, follow it before enqueuing
+        nb = self._resolve_redirect(conn, nb)
+
         if nb not in this_parents:
             this_parents[nb] = current
-            queue.append(nb)
             if nb in other_parents:
-                return nb  # meeting node
+                return nb  # meeting point
+            queue.append(nb)
+
     return None
 
 def _reconstruct(meet, parents_fwd, parents_bwd):

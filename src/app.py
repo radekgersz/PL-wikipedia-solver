@@ -24,13 +24,28 @@ def suggest():
 @app.route('/find', methods=['POST'])
 def find():
     data = request.get_json()
-    start = data.get('start','null')
-    end = data.get('end','null')
-    pathWithIds = databaseHandler.findShortestPath(start,end)
+    start = data.get('start', '').strip()
+    end = data.get('end', '').strip()
+
+    if not start or not end:
+        return jsonify(message="Both start and end article titles are required.", path=[], redirects=[])
+
+    pathWithIds, redirects = databaseHandler.findShortestPath(start, end)
+
     if not pathWithIds:
-        return jsonify(message="No path between the two articles was found!")
+        return jsonify(message="No path between the two articles was found.", path=[], redirects=redirects)
+
     pathWithNames = databaseHandler.convertIDsToNames(pathWithIds)
-    return jsonify(message="Path found.", path=pathWithNames)
+
+    # Build redirect messages
+    redirect_msgs = []
+    for src_id, target_id in redirects:
+        src = databaseHandler.getNameFromID(src_id)
+        target = databaseHandler.getNameFromID(target_id)
+        redirect_msgs.append(f"‘{src}’ redirects to ‘{target}’.")  # typographic quotes for nicer look
+
+    return jsonify(message=" ---> ".join(pathWithNames), path=pathWithNames, redirects=redirect_msgs)
+
 if __name__ == '__main__':
     app.run(debug=True)
 

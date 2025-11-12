@@ -50,17 +50,32 @@ class DatabaseHandler:
         return self._split_ids(row[0]) if row else []
 
     # ---------- bidirectional BFS ----------
-
     def findShortestPath(self, startName, endName):
         start_id = self.getIDFromName(startName)
         end_id = self.getIDFromName(endName)
-        if start_id is None or end_id is None:
-            return None
 
-        if start_id == end_id:
-            return [start_id]
+        if start_id is None or end_id is None:
+            return None, []  # also return empty redirect info
 
         with self.engine.connect() as conn:
+            # 🔹 Track if redirects were followed
+            redirect_info = []
+
+            original_start = start_id
+            original_end = end_id
+
+            start_id = self._resolve_redirect(conn, start_id)
+            end_id = self._resolve_redirect(conn, end_id)
+
+            # Record any redirects that happened for start/end
+            if original_start != start_id:
+                redirect_info.append((original_start, start_id))
+            if original_end != end_id:
+                redirect_info.append((original_end, end_id))
+
+            if start_id == end_id:
+                return [start_id], redirect_info
+
             parents_fwd = {start_id: None}
             parents_bwd = {end_id: None}
             q_fwd = deque([start_id])
@@ -69,13 +84,13 @@ class DatabaseHandler:
             while q_fwd and q_bwd:
                 meet = self._expand_frontier(conn, q_fwd, parents_fwd, parents_bwd, self._get_outgoing)
                 if meet is not None:
-                    return self._reconstruct(meet, parents_fwd, parents_bwd)
+                    return self._reconstruct(meet, parents_fwd, parents_bwd), redirect_info
 
                 meet = self._expand_frontier(conn, q_bwd, parents_bwd, parents_fwd, self._get_incoming)
                 if meet is not None:
-                    return self._reconstruct(meet, parents_fwd, parents_bwd)
+                    return self._reconstruct(meet, parents_fwd, parents_bwd), redirect_info
 
-        return None
+        return None, redirect_info
 
     def _expand_frontier(self, conn, queue, this_parents, other_parents, neighbor_fn):
         if not queue:
@@ -132,3 +147,20 @@ class DatabaseHandler:
         with self.engine.connect() as conn:
             rows = conn.execute(query, {"prefix": f"{prefix}%", "limit": limit}).fetchall()
         return [row[0] for row in rows]
+
+    def _resolve_redirect(self, conn, page_id):
+        row = conn.execute(
+            text("SELECT is_redirect FROM pages WHERE id = :id"),
+            {"id": page_id}
+        ).fetchone()
+        if not row:
+            return page_id
+        if row[0] == 0:
+            return page_id  # not a redirect
+
+        # It’s a redirect → get its target
+        r = conn.execute(
+            text("SELECT target_id FROM redirects WHERE source_id = :id"),
+            {"id": page_id}
+        ).fetchone()
+        return r[0] if r else page_id

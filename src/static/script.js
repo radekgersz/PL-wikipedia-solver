@@ -49,27 +49,46 @@ setupAutocomplete('start');
 setupAutocomplete('end');
 
 
-// --- Your existing path-finding function ---
 async function findShortestPath() {
-    const start = document.getElementById('start').value;
-    const end = document.getElementById('end').value;
+    const start = document.getElementById('start').value.trim();
+    const end = document.getElementById('end').value.trim();
+    const resultEl = document.getElementById('result');
+    resultEl.innerHTML = '';
+
+    if (!start || !end) {
+        resultEl.textContent = 'Please enter both start and end article titles before searching.';
+        resultEl.style.color = 'red';
+        return;
+    }
 
     const res = await fetch('/find', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ start, end })
     });
 
     const data = await res.json();
-    const resultEl = document.getElementById('result');
-    resultEl.innerHTML = ''; // clear previous result
 
+    // --- show redirect info, if any ---
+    if (data.redirects && data.redirects.length > 0) {
+        const infoDiv = document.createElement('div');
+        infoDiv.style.color = '#666';
+        infoDiv.style.fontSize = '0.95rem';
+        infoDiv.style.marginBottom = '8px';
+        infoDiv.innerHTML = data.redirects.join('<br>');
+        resultEl.appendChild(infoDiv);
+    }
+
+    // --- handle path ---
     if (!data.path || data.path.length === 0) {
-        resultEl.textContent = data.message;
+        const msg = document.createElement('div');
+        msg.textContent = data.message;
+        msg.style.color = '#444';
+        resultEl.appendChild(msg);
         return;
     }
 
-    // Create clickable links with arrows
+    const pathDiv = document.createElement('div');
     data.path.forEach((title, i) => {
         const link = document.createElement('a');
         link.href = `https://pl.wikipedia.org/wiki/${encodeURIComponent(title)}`;
@@ -78,17 +97,16 @@ async function findShortestPath() {
         link.rel = 'noopener noreferrer';
         link.style.color = '#007BFF';
         link.style.textDecoration = 'none';
-
         link.addEventListener('mouseover', () => link.style.textDecoration = 'underline');
         link.addEventListener('mouseout', () => link.style.textDecoration = 'none');
-
-        resultEl.appendChild(link);
+        pathDiv.appendChild(link);
 
         if (i < data.path.length - 1) {
             const arrow = document.createElement('span');
             arrow.textContent = '  --->  ';
-            resultEl.appendChild(arrow);
+            pathDiv.appendChild(arrow);
         }
     });
+    resultEl.appendChild(pathDiv);
 }
 
