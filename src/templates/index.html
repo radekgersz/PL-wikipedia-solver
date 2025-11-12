@@ -8,9 +8,15 @@
     <div class="container">
         <h1>Polish Wikipedia Speedrun Solver</h1>
 
-        <input id="start" placeholder="Starting Article">
-        <input id="end" placeholder="End Article">
-        <br>
+        <div class="inputs">
+            <div class="input-group">
+                <input id="start" placeholder="Starting Article">
+            </div>
+            <div class="input-group">
+                <input id="end" placeholder="End Article">
+            </div>
+        </div>
+
         <button onclick="findShortestPath()">Find Shortest Path</button>
 
         <p id="result"></p>

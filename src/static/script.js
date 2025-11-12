@@ -15,9 +15,13 @@ function setupAutocomplete(inputId) {
     input.addEventListener('input', async () => {
         const query = input.value.trim();
         suggestionBox.innerHTML = '';
+        suggestionBox.classList.remove('active'); // 🔹 hide initially
+
         if (query.length < 2) return;
 
         const suggestions = await fetchSuggestions(query);
+        if (suggestions.length === 0) return; // nothing to show
+
         suggestions.forEach(title => {
             const item = document.createElement('div');
             item.textContent = title;
@@ -25,19 +29,21 @@ function setupAutocomplete(inputId) {
             item.addEventListener('click', () => {
                 input.value = title;
                 suggestionBox.innerHTML = '';
+                suggestionBox.classList.remove('active');
             });
             suggestionBox.appendChild(item);
         });
+
+        suggestionBox.classList.add('active'); // 🔹 show when filled
     });
 
-    // Close dropdown when clicking elsewhere
     document.addEventListener('click', (e) => {
         if (!suggestionBox.contains(e.target) && e.target !== input) {
             suggestionBox.innerHTML = '';
+            suggestionBox.classList.remove('active');
         }
     });
 }
-
 // Activate autocomplete on both input fields
 setupAutocomplete('start');
 setupAutocomplete('end');

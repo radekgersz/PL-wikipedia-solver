@@ -9,12 +9,6 @@ body {
     margin: 0;
 }
 
-h1 {
-    color: #333;
-    margin-bottom: 30px;
-    font-size: 2rem;
-}
-
 .container {
     background: white;
     padding: 30px 40px;
@@ -23,19 +17,24 @@ h1 {
     text-align: center;
 }
 
+.inputs {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+/* each input gets its own positioning context */
+.input-group {
+    position: relative;
+}
+
 input {
     padding: 10px 14px;
-    margin: 10px;
     border: 1px solid #ccc;
     border-radius: 6px;
     width: 200px;
     font-size: 1rem;
-    transition: border-color 0.2s;
-}
-
-input:focus {
-    border-color: #007BFF;
-    outline: none;
 }
 
 button {
@@ -62,21 +61,25 @@ button:active {
     font-size: 1.1rem;
     color: #444;
 }
-.container {
-    position: relative;
-}
 
+/* suggestions fixed */
 .suggestions {
     position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
     background: white;
     border: 1px solid #ccc;
     border-radius: 6px;
-    width: 220px;
     max-height: 200px;
     overflow-y: auto;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     margin-top: 4px;
     z-index: 1000;
+    display: none; /* 🔹 hidden by default */
+}
+.suggestions.active {
+    display: block; /* 🔹 visible only when active */
 }
 
 .suggestion-item {
