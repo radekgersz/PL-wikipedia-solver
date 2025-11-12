@@ -123,4 +123,37 @@ button:active {
     margin-bottom: 10px;
     font-style: italic;
 }
+#swap-btn {
+    background-color: #007bff;   /* Bright blue to match your main button */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    line-height: 1;
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+#swap-btn:hover {
+    background-color: #0056b3;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+#swap-btn:active {
+    transform: scale(0.95);
+}
+
+.inputs {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
 

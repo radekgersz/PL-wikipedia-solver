@@ -47,6 +47,13 @@ function setupAutocomplete(inputId) {
 // Activate autocomplete on both input fields
 setupAutocomplete('start');
 setupAutocomplete('end');
+document.getElementById('swap-btn').addEventListener('click', () => {
+    const startInput = document.getElementById('start');
+    const endInput = document.getElementById('end');
+    const temp = startInput.value;
+    startInput.value = endInput.value;
+    endInput.value = temp;
+});
 
 
 async function findShortestPath() {
