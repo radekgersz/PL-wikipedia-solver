@@ -1,7 +1,7 @@
 import os
-from DatabaseHelpers import downloadDatabase
+from src.DatabaseHelpers import downloadDatabase
 from flask import Flask, render_template, request, jsonify
-from DatabaseHandler import DatabaseHandler
+from src.DatabaseHandler import DatabaseHandler
 import dotenv
 
 app = Flask(__name__)

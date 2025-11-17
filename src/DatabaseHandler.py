@@ -1,4 +1,4 @@
-from DatabaseHelpers import createSQLiteEngine
+from src.DatabaseHelpers import createSQLiteEngine
 from sqlalchemy import text
 from collections import deque
 import os
