@@ -44,6 +44,17 @@ def find():
         return jsonify(message="Both start and end article titles are required.", path=[], redirects=[])
 
     pathWithIds, redirects = databaseHandler.findShortestPath(start, end)
+    found = pathWithIds is not None
+    path_length = len(pathWithIds) if found else 0
+
+    # Log the search
+    databaseHandler.logSearch(
+        start=start,
+        end=end,
+        path_length=path_length,
+        found_path=found,
+        ip=request.remote_addr
+    )
 
     if not pathWithIds:
         return jsonify(message="No path between the two articles was found.", path=[], redirects=redirects)
