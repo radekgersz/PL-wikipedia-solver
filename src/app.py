@@ -1,14 +1,14 @@
 import os
-from src.DatabaseHelpers import downloadDatabase
+from DatabaseHelpers import downloadDatabase
 from flask import Flask, render_template, request, jsonify
-from src.DatabaseHandler import DatabaseHandler
+from DatabaseHandler import DatabaseHandler
 import dotenv
 
 app = Flask(__name__)
 
 dotenv.load_dotenv()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "dataset", "finalDB.sqlite"))
+DB_PATH = os.path.abspath(os.path.join(BASE_DIR, "dataset", "finalDB.sqlite"))
 # Only download if missing
 if not os.path.exists(DB_PATH):
     print("Database file missing — downloading...")
