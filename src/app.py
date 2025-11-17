@@ -7,9 +7,10 @@ import dotenv
 app = Flask(__name__)
 
 dotenv.load_dotenv()
-db_path = os.path.join("..", "dataset", "finalDB.sqlite")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "dataset", "finalDB.sqlite"))
 # Only download if missing
-if not os.path.exists(db_path):
+if not os.path.exists(DB_PATH):
     print("Database file missing — downloading...")
     downloadDatabase(
         os.getenv("REPO_ID"),
@@ -18,7 +19,7 @@ if not os.path.exists(db_path):
     )
 else:
     print("Database file already present — skipping download.")
-databaseHandler = DatabaseHandler("../dataset/finalDB.sqlite")
+databaseHandler = DatabaseHandler(DB_PATH)
 @app.route('/')
 def home():
     return render_template('index.html')
