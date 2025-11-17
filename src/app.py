@@ -7,8 +7,10 @@ import dotenv
 app = Flask(__name__)
 
 dotenv.load_dotenv()
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.abspath(os.path.join(BASE_DIR, "dataset", "finalDB.sqlite"))
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
+DB_PATH = os.path.join(PROJECT_ROOT, "dataset", "finalDB.sqlite")
 # Only download if missing
 if not os.path.exists(DB_PATH):
     print("Database file missing — downloading...")
