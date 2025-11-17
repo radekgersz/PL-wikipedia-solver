@@ -1,5 +1,5 @@
-from pyexpat.errors import messages
-
+import os
+from DatabaseHelpers import downloadDatabase
 from flask import Flask, render_template, request, jsonify
 from DatabaseHandler import DatabaseHandler
 import dotenv
@@ -7,7 +7,17 @@ import dotenv
 app = Flask(__name__)
 
 dotenv.load_dotenv()
-# datasetPath = downloadDatabase(os.getenv("REPO_ID"), os.getenv("ACCESS_TOKEN"),os.getenv("DATABASE_FILENAME"))
+db_path = os.path.join("..", "dataset", "finalDB.sqlite")
+# Only download if missing
+if not os.path.exists(db_path):
+    print("Database file missing — downloading...")
+    downloadDatabase(
+        os.getenv("REPO_ID"),
+        os.getenv("ACCESS_TOKEN"),
+        os.getenv("DATABASE_FILENAME")
+    )
+else:
+    print("Database file already present — skipping download.")
 databaseHandler = DatabaseHandler("../dataset/finalDB.sqlite")
 @app.route('/')
 def home():

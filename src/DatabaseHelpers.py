@@ -8,7 +8,7 @@ def downloadDatabase(repoID,accessToken,filename):
         repo_type="dataset",
         token=accessToken,
         local_dir='../dataset',
-        dry_run=True,
+        dry_run=False,
         filename=filename
         )
     return dataset_path
