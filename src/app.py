@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 dotenv.load_dotenv()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.abspath(os.path.join(BASE_DIR, "dataset", "finalDB.sqlite"))
+DB_PATH = os.path.abspath(os.path.join(BASE_DIR,"..", "dataset", "finalDB.sqlite"))
 # Only download if missing
 if not os.path.exists(DB_PATH):
     print("Database file missing — downloading...")
@@ -42,11 +42,20 @@ def find():
         return jsonify(message="Both start and end article titles are required.", path=[], redirects=[])
 
     pathWithIds, redirects = databaseHandler.findShortestPath(start, end)
-
+    found = pathWithIds is not None
+    path_length = len(pathWithIds) if found else 0
+    databaseHandler.logSearch(
+        start=start,
+        end=end,
+        path_length=path_length,
+        found_path=found,
+        ip=request.remote_addr
+    )
     if not pathWithIds:
         return jsonify(message="No path between the two articles was found.", path=[], redirects=redirects)
 
     pathWithNames = databaseHandler.convertIDsToNames(pathWithIds)
+
 
     # Build redirect messages
     redirect_msgs = []

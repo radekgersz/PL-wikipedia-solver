@@ -166,3 +166,21 @@ class DatabaseHandler:
             {"id": page_id}
         ).fetchone()
         return r[0] if r else page_id
+
+    def logSearch(self, start, end, path_length, found_path, ip):
+        query = text("""
+                     INSERT INTO search_history (start_article, end_article, path_length, found_path, ip)
+                     VALUES (:start, :end, :plen, :found, :ip)
+                     """)
+        with self.engine.connect() as conn:
+            conn.execute(
+                query,
+                {
+                    "start": start,
+                    "end": end,
+                    "plen": path_length,
+                    "found": 1 if found_path else 0,
+                    "ip": ip
+                }
+            )
+            conn.commit()
